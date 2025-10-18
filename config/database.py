@@ -1,49 +1,32 @@
 import os
 import logging
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session as SASession
 from sqlalchemy.exc import OperationalError
-from models.db import Base
-import importlib
-import importlib.util
-_dotenv_spec = importlib.util.find_spec('dotenv')
-if _dotenv_spec is not None:
-    dotenv = importlib.import_module('dotenv')
-    try:
-        dotenv.load_dotenv()
-    except Exception:
-        # ignore load failures
-        pass
+from models.db import Base  # Aquí defines Base = declarative_base() en models/db.py
 
 logging.basicConfig(level=logging.INFO)
 
-MYSQL_URI = os.getenv('MYSQL_URI')
-SQLITE_URI = 'sqlite:///territorios_local.db'
+MYSQL_URI = os.getenv('MYSQL_URI')  # Asegúrate que esté en .env o variable de entorno
+SQLITE_URI = 'sqlite:///territorios_local.db'  # fallback local
 
 def get_engine():
-    """
-    Intenta crear una conexión con MySQL. Si falla, usa SQLite local.
-    """
     if MYSQL_URI:
         try:
             engine = create_engine(MYSQL_URI, echo=True)
-            # Probar conexión
             conn = engine.connect()
             conn.close()
             logging.info('Conexión a MySQL exitosa.')
             return engine
         except OperationalError:
             logging.warning('No se pudo conectar a MySQL. Usando SQLite local.')
-    # Fallback a SQLite
     engine = create_engine(SQLITE_URI, echo=True)
     return engine
 
 engine = get_engine()
-Session = sessionmaker(bind=engine)
-Base.metadata.create_all(engine)
+SessionLocal = sessionmaker(bind=engine)
 
-def get_db_session():
-    """
-    Retorna una nueva sesión de base de datos para ser utilizada en los servicios o controladores.
-    """
-    return Session()
+Base.metadata.create_all(engine)  # type: ignore[attr-defined]
+
+def get_db_session() -> SASession:
+    return SessionLocal()

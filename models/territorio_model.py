@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 from typing import List
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from models.db import Base
 
 """
@@ -22,10 +22,10 @@ almacenando información relevante como su nombre.
 class Municipio(Base):
     __tablename__ = 'municipios'
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(nullable=False)
-    descripcion: Mapped[str | None] = mapped_column(nullable=True)
-    territorios: Mapped[List['Territorio']] = relationship('Territorio', back_populates='municipio', cascade='all, delete-orphan')
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+    descripcion = Column(String, nullable=True)
+    territorios = relationship('Territorio', back_populates='municipio', cascade='all, delete-orphan')
 
 
 """
@@ -37,8 +37,8 @@ la base de datos y permite gestionar los álbumes, así como establecer la relac
 class Territorio(Base):
     __tablename__ = 'territorios'
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(nullable=False)
-    producto: Mapped[str] = mapped_column(nullable=False)
-    municipio_id: Mapped[int] = mapped_column(ForeignKey('municipios.id'), nullable=False)
-    municipio: Mapped['Municipio'] = relationship('Municipio', back_populates='territorios')
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+    producto = Column(String, nullable=False)
+    municipio_id = Column(Integer, ForeignKey('municipios.id'), nullable=False)
+    municipio = relationship('Municipio', back_populates='territorios')
