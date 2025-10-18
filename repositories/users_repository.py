@@ -10,9 +10,12 @@ class UserRepository:
     Repositorio para la gestión de usuarios en la base de datos.
     Proporciona métodos para crear, consultar, actualizar y eliminar usuarios.
     """
-
-    def __init__(self, db_session: Session):
+    
+    def __init__(self, db_session):
         self.db = db_session
+        self.model = User 
+        
+    
 
     def get_all_users(self):
         """
@@ -48,7 +51,12 @@ class UserRepository:
         """
         #INSERT INTO users (username, password) VALUES (username, password);
         logger.info(f"Creando usuario: {username}")
-        new_user = User(username=username, password=password)
+        # Evitar pasar kwargs al constructor porque el analizador puede
+        # reportar que no existen parámetros nombrados; asignamos atributos
+        # directamente a la instancia del modelo.
+        new_user = User()
+        new_user.username = username
+        new_user.password = password
         self.db.add(new_user)
         self.db.commit()
         self.db.refresh(new_user)
@@ -92,3 +100,5 @@ class UserRepository:
             return user
         logger.warning(f"Usuario no encontrado para eliminar: {user_id}")
         return None
+    
+    
